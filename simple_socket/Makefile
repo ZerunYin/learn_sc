@@ -1,6 +1,7 @@
 include ../cmn.mk
 
-SRC := simple_socket.cpp
-
 comp:
-	$(CXX_SC) $(SRC)
+	$(CXX_SC) simple_socket.cpp
+
+comp_tagged:
+	$(CXX_SC) tagged_simple_socket.cpp

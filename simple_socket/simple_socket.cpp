@@ -16,18 +16,25 @@ struct Interconnect : public sc_module {
   simple_initiator_socket<Interconnect> simple_ini;
   simple_target_socket<Interconnect> simple_tgt;
 
+  tlm_generic_payload gp;
+  tlm_phase phase;
+  sc_time time;
+  tlm_dmi dmi;
+
   Interconnect(sc_module_name name)
     : sc_module(name),
       simple_ini("simple_ini"),
       simple_tgt("simple_tgt")
   {
-    simple_ini->register_nb_transport_bw(this, &Interconnect::nb_transport_bw); // backward path
-    simple_ini->register_invalidate_get_direct_mem_ptr(this, &Interconnect::invalidate_direct_mem_ptr);
+    simple_ini.register_nb_transport_bw(this, &Interconnect::nb_transport_bw); // backward path
+    simple_ini.register_invalidate_direct_mem_ptr(this, &Interconnect::invalidate_direct_mem_ptr);
 
-    simple_tgt->register_b_transport(this, &Interconnect::b_transport);
-    simple_tgt->register_nb_transport_fw(this, &Interconnect::nb_transport_fw);
-    simple_tgt->register_get_direct_mem_ptr(this, &Interconnect::get_direct_mem_ptr);
-    simple_tgt->register_transport_dbg(this, &Interconnect::transport_dbg);
+    simple_tgt.register_b_transport(this, &Interconnect::b_transport);
+    simple_tgt.register_nb_transport_fw(this, &Interconnect::nb_transport_fw);
+    simple_tgt.register_get_direct_mem_ptr(this, &Interconnect::get_direct_mem_ptr);
+    simple_tgt.register_transport_dbg(this, &Interconnect::transport_dbg);
+    simple_ini(simple_tgt);
+    SC_THREAD(run);
   }
 
   // backward path
@@ -60,6 +67,15 @@ struct Interconnect : public sc_module {
     return 0;
   }
 
+  void run() {
+    simple_ini->b_transport(gp, time);
+    simple_ini->nb_transport_fw(gp, phase, time);
+    simple_ini->get_direct_mem_ptr(gp, dmi);
+    simple_ini->transport_dbg(gp);
+
+    simple_tgt->nb_transport_bw(gp, phase, time);
+    simple_tgt->invalidate_direct_mem_ptr(20, 40);
+  }
 };
 
 
