@@ -82,7 +82,7 @@ struct Target : public sc_module, tlm_fw_transport_if<> {
     tgt_socket->invalidate_direct_mem_ptr(20, 40);
   }
 
-  void b_transport(tlm_generic_payload &gp, sc_time &time) {
+  void b_transport(tlm_generic_payload &gp, sc_time &time) override {
     cout << "b_transport\n";
   }
 
@@ -96,7 +96,7 @@ struct Target : public sc_module, tlm_fw_transport_if<> {
     return true;
   }
 
-  int unsigned transport_dbg(tlm_generic_payload &gp) {
+  int unsigned transport_dbg(tlm_generic_payload &gp) override {
     cout << "transport_dbg\n";
     return 0;
   }
